@@ -92,7 +92,7 @@ kill_jmeter() {
 		taskkill /F /IM Java.exe 2>/dev/null
 		sleep 5 #Kill command duurt even
 		
-		stopJmeter=$(ps -W | grep Java | awk '{print $1}')
+		stopJmeter=$(ps -W | grep -i Java | awk '{print $1}')
 		
 		# echo $stopJmeter
 		if [[ $stopJemeter != "" ]]; then
@@ -224,6 +224,42 @@ run_silk() {
 	
 }
 
+# Create a new testplan copy with the right workload enabled
+preparejmeterscript() {
+	projectname=$1
+	workload=$2
+	scriptfolder=$3
+	
+	sourcefilename=$scriptfolder/$projectname.jmx
+	targetfilename=$scriptfolder/"$projectname"_"$workload".jmx
+
+	echo "Prepare workload script from base script, project [$projectname] workload [$workload]..."
+
+	cp $sourcefilename $targetfilename
+
+	# disable all workload configurations
+	sed -i "/testname=.WORKLOAD_/s/true/false/" "$targetfilename"
+
+	# enable configured workload
+	sed -i "/testname=.WORKLOAD_$workload.\s/s/false/true/" "$targetfilename"
+
+	# check if at least one workload is enabled
+	if grep -q 'WORKLOAD_.*true' $targetfilename
+	then
+		echo "Testplan generated to file [$targetfilename]"
+	else
+		echo "Fatal: could not create script [$targetfilename] from [$sourcefilename]"
+		
+		echo "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
+		echo "Unable to prepare jmeter script"
+		echo "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
+			
+		exit 1
+	fi
+
+	echo "Done preparing testscript"
+}
+
 # Het runnen van een jmeter test
 run_jmeter() {
 	echo "_____________________________________________________"
@@ -250,6 +286,9 @@ run_jmeter() {
 	
 	echo "Projectname: $projectname"
 	
+	# prepare new script from source with right workload enabled
+	preparejmeterscript $projectname $workload $scriptfolder
+	
 	if isfile $scriptfolder/${projectname}_$workload.jmx; then echo "Script found for $workload workload, continuing..."; else aborttest "Script not found for $workload workload. Aborting!"; fi  
 	
 	cd ${loadgendir_jmeter}
@@ -264,8 +303,8 @@ run_jmeter() {
 	
 	# Get the ProcessID for silkperformer to see if it is still running
 	if [[ $OS == "windows" ]]; then
-		processStart=$(ps -a | grep Java | awk '{print $1}' | head -1)
-		process=$(ps -a | grep Java | awk '{print $1}' | head -1)
+		processStart=$(ps -a | grep -i Java | awk '{print $1}' | head -1)
+		process=$(ps -a | grep -i Java | awk '{print $1}' | head -1)
 	elif [[ $OS == "linux" ]]; then
 		processStart=$(ps -a | grep jmeter.sh | awk '{print $1}' | head -1)
 		process=$(ps -a | grep jmeter.sh | awk '{print $1}' | head -1)
@@ -291,7 +330,7 @@ run_jmeter() {
 		# Prep for next while loop and make sure Jmeter does not run for too long
 		if [[ $threshold -gt $tdiff ]]; then
 			if [[ $OS == "windows" ]]; then
-				process=$(ps -a | grep Java | awk '{print $1}' | head -1)
+				process=$(ps -a | grep -i Java | awk '{print $1}' | head -1)
 			elif [[ $OS == "linux" ]]; then
 				process=$(ps -a | grep jmeter.sh | awk '{print $1}' | head -1)
 			fi

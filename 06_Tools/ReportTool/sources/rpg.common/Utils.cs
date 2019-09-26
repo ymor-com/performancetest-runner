@@ -188,32 +188,36 @@ namespace rpg.common
         /// <returns></returns>
         public static string NormalizeTransactionName(string suggestedName)
         {
-            string name = suggestedName;
-            // remove '/'
-            name = name.Replace('/','|');   // dangerous for sed statement in templategenerator (for now)
-            // remove '\'
-            name = name.Replace('\\','|');  // dangerous for sed statement in templategenerator (for now)
-            // remove ':'
-            name = name.Replace(":", "-");
-            // remove '.'
-            name = name.Replace(".", "");   // dangerous for sed statement in templategenerator (for now)
-            // remove '#'
-            //name = name.Replace('#','_'); // not yet, used in default transaction names
-            // remove < and >
-            name = name.Replace("<", "");
-            name = name.Replace(">", "");
-            // remove " and '
-            name = name.Replace("\"", "");
-            name = name.Replace("\'", "");
-            // remove [ and ]
-            name = name.Replace("[", "(");
-            name = name.Replace("]", ")");
-            // remove end whitespaces
-            name = name.Trim();             // just more beautiful
-            // remove double whitespaces
-            name = name.Replace("  "," ");  // template generator is failing on this
+            //string name = suggestedName;
+            //name = name.Replace('/','|');   // dangerous for sed statement in templategenerator (for now)
+            //name = name.Replace('\\','|');  // dangerous for sed statement in templategenerator (for now)
+            //name = name.Replace(":", "-");
+            //name = name.Replace("=", "-");
+            //name = name.Replace(".", "");   // dangerous for sed statement in templategenerator (for now)
+            //name = name.Replace("<", "");
+            //name = name.Replace(">", "");
+            //name = name.Replace("\"", "");
+            //name = name.Replace("\'", "");
+            //name = name.Replace("[", "(");
+            //name = name.Replace("]", ")");
+            //name = name.Replace('{', '|'); // sed in template generator is sensitive to curly brackets (replaces initial fix in post
+            //name = name.Replace('}', '|');
+            //name = name.Trim();             // just more beautiful
+            //name = name.Replace("  "," ");  // template generator is failing on this
 
-            return name;
+            // trial for testpurposes, not effective yet, appears only in log for now
+            string newName = "";
+            foreach (char c in suggestedName)
+            {
+                // characters allowed: a-z A-Z 0-9 - _ rest is replaced by _
+                if (Regex.IsMatch(c.ToString(), $"[a-zA-Z0-9-]"))
+                    newName = string.Concat(newName, c);
+                else
+                    newName = string.Concat(newName, '_');
+            }
+            Log.WriteLine(string.Format("normalize transactionname org=[{0}] new=[{1}]", suggestedName, newName));
+
+            return newName;
         }
 
     }

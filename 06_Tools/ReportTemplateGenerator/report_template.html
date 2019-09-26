@@ -62,9 +62,10 @@
 		table.details tr th {
 			font-weight: bold;
 			background: #a6caf0;
-			text-align: center;
+			text-align: left;
+			vertical-align: left;
 		}
-
+		
 		table.details tr th.blank {
 			font-weight: bold;
 			background-color: white;
@@ -126,6 +127,25 @@
 			font-weight: bold;
 			color: red;
 		}
+
+		/* Rotation */		
+		th.rotate {
+			height: 170px;
+			white-space: nowrap;
+		}
+
+		th.rotate > div {
+			transform: 
+				translate(0px, 55px)
+				rotate(270deg);
+			width: 40px;
+		}
+		
+		th.rotate > div > span {
+			border-bottom: 1px solid #ccc;
+			padding: 1px 1px;
+		}
+
 	</style>
 	
 </head>
@@ -134,7 +154,10 @@
 <table width="100%"><tr>
 <td>
 	<h1>||Project|| Performancetest Summary [${testrundatetime}]</h1> 
-	</td>
+</td>
+<td align="right">
+<a href="https://github.com/ICTU/performancetest-runner/wiki/Evaluation-of-testresults:-5-steps" target='_blank'>Help on report evaluation</a>
+</td>
 <td align="right">
 <img src="${companylogoreference}" height="30p"/>
 </td></tr></table>
@@ -202,7 +225,7 @@
 		Num of transactions exceeding 'red' threshold</td></tr>
 	<tr><td class="name">Baseline warnings<br><td>
 		Num of transactions with 'red' baseline delta% are evaluated</td></tr>
-	<tr><td class="name">Trendbreak 'ramp-up'<br><td>
+	<tr><td class="name">Trendbreak 'scalability'<br><td>
 		Percentage of (max) users at which ramp-up of throughput breaks</td></tr>
 	<tr><td class="name">Trendbreak 'stability'<br><td>
 		Progress of test at which stability of throughput or errorcount breaks</td></tr>
@@ -221,7 +244,7 @@
 	<tr><td class="name">Threshold violations</td><td id="threshold_violations">${_thresholdviolations:4:0:0}</td></tr>
 	<tr><td class="name">Baseline warnings</td><td id="baseline_warnings">${_baselinewarnings:4:0:0}</td></tr>
 	<tr><td>&nbsp</td><td></td></tr>
-	<tr><td class="name">Trendbreak 'ramp-up' (%)</td><td id="trendbreak_rampup">${trendbreakrampuppercentage}</td></tr>
+	<tr><td class="name">Trendbreak 'scalability' (%)</td><td id="trendbreak_scalability">${trendbreakrampuppercentage}</td></tr>
 	<tr><td class="name">Trendbreak 'stability' (%)</td><td id="trendbreak_stability">${trendbreakstabilitypercentage}</td></tr>
 	<tr><td>&nbsp</td><td></td></tr>
 	<tr><td class="name">Duration</td><td id="duration">${testduration}</td></tr>
@@ -241,7 +264,7 @@
 </tr></table>
 
 <hr align="left" width="100%" size="1"/>
-
+<h3>Trend last ${maxtrendcount} testruns</h3>
 <table width="100%"><tr>
 	<td width="25%"><canvas id="chart_trend_stats_1"></canvas></td>
 	<td width="25%"><canvas id="chart_trend_stats_2"></canvas></td>
@@ -270,12 +293,10 @@
 
 <h2>Trend (ms)</h2>
 <table cellspacing="2" cellpadding="5" border="0" class="details">
-	<tr valign="top">
-	<th>Transaction</th>$[<th>${testrundatetime:#}<br>${appversion:#}</th>]
+	<tr>
+	<th>Transaction</th>$[<th class="rotate"><div><span>${testrundatetime:#}<br>${appversion:#}</span></div></th>]
 	</tr>
 	||BLOK3||
-	<th>Transaction</th>$[<th>${testrundatetime:#}</th>]
-	</tr>
 </table>
 
 
@@ -420,7 +441,7 @@ new Chart(document.getElementById("chart_trend"), {
 	  },
       title: {
         display: true,
-        text: 'Trend last ${maxtrendcount} testruns'
+        text: 'Response times last ${maxtrendcount} testruns'
       },
       scales: {
             yAxes: [{
@@ -448,14 +469,6 @@ new Chart(document.getElementById("chart_trend_stats_1"), {
       labels: [$['${testrundatetime:#}',]],
       datasets: [
         {			
-          label: "Faults (%)",
-          data: [$[${faultpercentage:#::null},]],
-		  fill: false,
-		  lineTension: 0.1,
-		  pointRadius: 2,
-		  borderWidth: 2,
-		  yAxisID: 'Y2'
-},{			
           label: "Users",
           data: [$[${mergedusers:#::null},]],
 		  fill: false,
@@ -463,6 +476,14 @@ new Chart(document.getElementById("chart_trend_stats_1"), {
 		  pointRadius: 2,
 		  borderWidth: 2,
 		  yAxisID: 'Y1'
+},{			
+          label: "Faults (%)",
+          data: [$[${faultpercentage:#::null},]],
+		  fill: false,
+		  lineTension: 0.1,
+		  pointRadius: 2,
+		  borderWidth: 2,
+		  yAxisID: 'Y2'
 }]
     },
     options: {
@@ -485,7 +506,7 @@ new Chart(document.getElementById("chart_trend_stats_1"), {
 	  },
       title: {
         display: true,
-        text: 'General statistics (trend)'
+        text: 'General statistics'
       },
       scales: {
             yAxes: [{
@@ -523,7 +544,7 @@ new Chart(document.getElementById("chart_trend_stats_2"), {
       labels: [$['${testrundatetime:#}',]],
       datasets: [
         {			
-          label: "Avg of 90 percentiles (s)",
+          label: "90 Percentiles (s)",
           data: [$[${avgof90percentiles:#::null},]],
 		  fill: false,
 		  lineTension: 0.1,
@@ -531,7 +552,7 @@ new Chart(document.getElementById("chart_trend_stats_2"), {
 		  borderWidth: 2,
 		  yAxisID: 'Y1'
 },{
-          label: "Avg of averages (s)",
+          label: "Averages (s)",
           data: [$[${avgofaverages:#::null},]],
 		  fill: false,
 		  lineTension: 0.1,
@@ -560,7 +581,7 @@ new Chart(document.getElementById("chart_trend_stats_2"), {
 	  },
       title: {
         display: true,
-        text: 'Response time grand averages (trend)'
+        text: 'Response time grand averages'
       },
       scales: {
             yAxes: [{
@@ -588,7 +609,7 @@ new Chart(document.getElementById("chart_trend_stats_3"), {
       labels: [$['${testrundatetime:#}',]],
       datasets: [
         {			
-          label: "Transactions success",
+          label: "Success",
           data: [$[${transactionstotal:#:0:null},]],
 		  fill: false,
 		  lineTension: 0.1,
@@ -596,7 +617,7 @@ new Chart(document.getElementById("chart_trend_stats_3"), {
 		  borderWidth: 2,
 		  yAxisID: 'Y1'
 },{
-          label: "Transactions failed",
+          label: "Failed",
           data: [$[${transactionsfailed:#:0:null},]],
 		  fill: false,
 		  lineTension: 0.1,
@@ -625,7 +646,7 @@ new Chart(document.getElementById("chart_trend_stats_3"), {
 	  },
       title: {
         display: true,
-        text: 'Number of transactions (trend)'
+        text: 'Number of transactions'
       },
       scales: {
             yAxes: [{
@@ -654,7 +675,7 @@ new Chart(document.getElementById("chart_trend_stats_4"), {
       labels: [$['${testrundatetime:#}',]],
       datasets: [
         {			
-          label: "Trendbreak ramp-up (%)",
+          label: "Scalability (%)",
           data: [$[${trendbreakrampuppercentage:#:0:null},]],
 		  fill: false,
 		  lineTension: 0.1,
@@ -662,7 +683,7 @@ new Chart(document.getElementById("chart_trend_stats_4"), {
 		  borderWidth: 2,
 		  yAxisID: 'Y1'
 },{
-          label: "Trendbreak stability (%)",
+          label: "Stability (%)",
           data: [$[${trendbreakstabilitypercentage:#:0:null},]],
 		  fill: false,
 		  lineTension: 0.1,
@@ -691,7 +712,7 @@ new Chart(document.getElementById("chart_trend_stats_4"), {
 	  },
       title: {
         display: true,
-        text: 'Trendbreak (trend)'
+        text: 'Trendbreak'
       },
       scales: {
             yAxes: [{

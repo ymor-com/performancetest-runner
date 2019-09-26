@@ -1,1 +1,2 @@
-<th>Transaction</th>$[<th>${printableTime:#}</th>]
+
+<th>Transaction</th>$[<th id="${testrundatetime:#}"></th>]
