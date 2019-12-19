@@ -2,9 +2,12 @@ using System.Text.RegularExpressions;
 using System.Collections.Generic;
 using rpg.common;
 
-namespace rpg.parsemeasures
+namespace rpg.common
 {
-    class JmeterLineClean
+    /// <summary>
+    /// Handle cleaned up jtl line (parsed by JmeterLineRaw)
+    /// </summary>
+    public class JmeterLineClean
     {
         /// <summary>
         /// substring position: lb=0; ts=1; t=2; s=3; na=4

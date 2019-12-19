@@ -1,6 +1,33 @@
 RPG (RePortGenerator tools) release notes
 
-Replaces platform dependent (x86) Silk Result Tools (srt)
+Replaces platform independent .NetCore Silk Result Tools (srt)
+
+4.9.3.0
+11-12-2019	threshold choise added to the log
+12-12-2019	start- and endtime logged per application
+16-12-2019	transaction name normalization: trim spaces first
+
+4.9.2.0
+2-12-2019	merge: history fix where first (oldest) transaction value was empty, the second value shifted left
+
+4.9.1.0
+29-10-2019	parse raw jtl lines: unusable lines for measures not parsed
+29-10-2019	parse transaction name normalization logs only if normalization changed something (minor)
+
+4.9.0.0
+15-10-2019	baseline reference found in merge stage stored in database for historic use
+
+8-10-2019
+x 			Modified the measurement aggregation graph to include 0 values for empty time bucket. And therefore now should correctly display the test duration
+
+4.8.0.0 (trending on threshold violations)
+7-10-2019	debug logging removed
+7-10-2019	thresholdviolations renamed and stored to database for trending
+7-10-2019	baselinewarnings renamed and stored to database for trending
+7-10-2019	variables _baselineref and _baselinereason renamed: _ prefix removed
+
+4.7.0.0
+x			search for first and last sample timestam improved, now searching for lowest and highest value (duration calculation fix)
 
 4.6.0.0
 26-9-2019	transaction name normalization changed to: a-z A-Z 0-9 - _ (rest is replaced by _)

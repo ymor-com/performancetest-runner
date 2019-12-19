@@ -6,29 +6,151 @@ aborttest() {
 	exit 1
 }
 
-loadGlobals() {
-	#echo "Start loading globals"
-	# Check if there is a testautomation_globals.incl file in the test automation root folder
+createGlobals() {
+	
+	# Check if globals_location is known
+	# Load globals_loaction
 	if isfile ./testautomation_globals_location.incl; then 
-		# echo "Found location of test automation global variables"
+		echo "Found location of test automation global variables, including it now..."
 		. ./testautomation_globals_location.incl
-	else 
-		echo "Could not find ./testautomation_globals_location creating it now"
-		echo "testautomation_globals_location=\"E:/00_Globals/testautomation_globals.incl\"" > testautomation_globals_location.incl
-		aborttest
+	else
+		aborttest "ERROR: Could not find \"testautomation_globals_location.incl\". Should be present in the performancetest-runner root. Probably something wrong with setup, aborting..."
+	fi
+	
+	defaults_location="./template/testautomation_globals_defaults.incl"
+	lastline_default=$(tail -1 $defaults_location)
+	if [[ "$lastline_default" != "# Dummyline for sed" ]]; then
+		echo -e "\\n# Dummyline for sed" >> $defaults_location
+		lastline_default=$(tail -1 $defaults_location)
+		if [[ "$lastline_default" != "# Dummyline for sed" ]]; then
+			echo "*****************************"
+			echo "ERROR" 
+			echo "Could not add dummy line to $defaults_location"
+			echo "Please contact support!"
+			echo "*****************************"
+			aborttest "Aborting test..."
+		fi
+	fi	
+	
+	overrides_location="$testautomation_globals_location/testautomation_globals_overrides.incl"
+	if isfile $overrides_location; then
+		
+		# Check if there is an empty line at the end of the overrides, this is required for sed to evaluate
+		lastline_overwrite=$(tail -1 $overrides_location)
+		if [[ "$lastline_overwrite" != "# Dummyline for sed" ]]; then
+			echo -e "\\n# Dummyline for sed" >> $overrides_location
+			lastline_overwrite=$(tail -1 $overrides_location)
+			if [[ "$lastline_overwrite" != "# Dummyline for sed" ]]; then
+				echo "*****************************"
+				echo "ERROR" 
+				echo "Could not add dummy line to $overrides_location"
+				echo "Please contact support!"
+				echo "*****************************"
+				aborttest "Aborting test..."
+			fi
+		fi
+		
+		# Check if all required variables are filled
+		numberOfValuesToFill=$(grep "ENTER_VALUE" $overrides_location | wc -l)
+		if [[ $numberOfValuesToFill -gt 0 ]]; then
+			echo "*****************************"
+			echo "ERROR" 
+			echo "There are still variables containing [ENTER_VALUE] that require a value"
+			echo "Location: $overrides_location"
+			echo "Aborting test"
+			echo "*****************************"
+			exit 1
+		else
+			echo "All overwrite variables contain a value, merging with defaults..."
+			MergeGlobals
+			numberOfValuesToFill=$(grep "ENTER_VALUE" $testautomation_globals_location/testautomation_globals.incl | wc -l)
+			if [[ $numberOfValuesToFill -gt 0 ]]; then
+				echo "*****************************"
+				echo "ERROR" 
+				echo "Merge was not fully successfull there are still variables containing [ENTER_VALUE] that require a value"
+				echo "Location: $testautomation_globals_location/testautomation_globals.incl"
+				echo "Aborting test"
+				echo "*****************************"
+				exit 1
+			fi
+		fi
+	else
+		echo "*****************************"
+		echo "ERROR"
+		echo "No overrides file present yet, creating it now in $testautomation_globals_location" 
+		cp ./template/testautomation_globals_overrides.incl $testautomation_globals_location
+		echo "Created testautomation_globals_overrides.incl file in $testautomation_globals_location please fill it with the correct values before rerunning the test!"
+		echo "*****************************"
+		aborttest "Stopping test now..."
 	fi
 		
-	if isfile $testautomation_globals_location; then 
-		echo "testautomation_globals found, including now"; 
-		. $testautomation_globals_location
-	else
-		echo "testautomation_globals_location: $testautomation_globals_location"
-		echo "Could not find location of global test automation variables! Copying template to testautomation_globals_location"
-		echo "current location: $(pwd)"
-		cp ./template/testautomation_globals.incl $testautomation_globals_location
-		aborttest "Aborting test due to testautomation_globals not present. Template is created now, please fill it with the correct locations before running test again!"
-	fi 
-	#echo "Done loading globals"
+}
+
+MergeGlobals() {
+	defaults_location="./template/testautomation_globals_defaults.incl"
+	overrides_location="$testautomation_globals_location/testautomation_globals_overrides.incl"
+	output_location="$testautomation_globals_location/testautomation_globals.incl"
+
+	echo "--Start MergeGlobals--"
+	echo "---Start Part 1---"
+	echo "Put all the key=value pairs from the defaults file into the defaultsArray"
+	declare -A defaultsArray=( )   # Initialize an empty array for the defaults
+	while read line; do
+		if [[ $line == *"="* ]]; then 				   # only do lines containing = should be used
+	  		key=$(echo $line | cut -d '=' -f1) 		   # everything on the left of =
+			value=$(echo $line | cut -d '=' -f2-) 	   # everything on the right of =
+			defaultsArray[$key]=$value				   # store the variable name as key, store the variable name as value
+			# echo "key: $key | value: $value"	
+		fi
+	done < $defaults_location
+	declare defaultsArray       # print resulting array
+	echo "---End Part 1---"
+	
+	echo
+	
+	echo "---Start Part 2---"
+	echo "Grab all the key=value pairs from the override file into the overridesArray"
+	declare -A overridesArray=( )   # Initialize an empty array for the overrides
+	while read line; do
+		if [[ $line == *"="* ]]; then 				   # only use lines containing = should be used
+			key=$(echo $line | cut -d '=' -f1) 		   # everything on the left of =
+			value=$(echo $line | cut -d '=' -f2-) 	   # everything on the right of =
+			overridesArray[$key]=$value				   # store the variable name as key, store the variable name as value
+		fi
+	done < $overrides_location
+	declare overridesArray		# print the resulting array
+	echo "---End Part 2---"
+	
+	echo
+
+	echo "---Start Part 3---"
+	echo "Put the overrides into the defaultsArray"
+	for override_variable in "${!overridesArray[@]}"; do 
+		defaultsArray[$override_variable]=${overridesArray[$override_variable]}
+	done
+	echo "---End Part 3---"
+	
+	echo
+
+	echo "---Start Part 4---"
+	echo "create an orderedArray"
+	echo \#\! \/bin\/bash > $output_location
+	while read line; do
+		if [[ $line == *"="* ]]; then 				   # only do lines containing = should be used
+			key=$(echo $line | cut -d '=' -f1)
+			echo $key\=${defaultsArray[$key]} >> $output_location
+		fi
+	done < $defaults_location
+
+	echo "---End Part 4---"
+	
+	echo
+}
+
+loadGlobals() {
+	. ./testautomation_globals_location.incl || aborttest "Could not find testautomation_globals_location to include" #load location of the globals
+	. $testautomation_globals_location/testautomation_globals.incl || aborttest "Could not find globals to include" # load the globals
+	. $projectfolder_root/$project/vars.incl || aborttest "Could not include project variables"
 }
 
 #Function to check if directory exists
@@ -86,7 +208,7 @@ kill_jmeter() {
 	#Kill al process of silk (2>null redirects the error output to null), 
 	#Dit is gedaan omdat je anders een error terug krijgt dat het silk process niet bestond
 	echo "Start with killing Jmeter (Java), could be too destructive"
-	if [[ $OS == "windows" ]]; then
+	if [[ $OS_type == "windows" ]]; then
 
 		#Controller cleanup
 		taskkill /F /IM Java.exe 2>/dev/null
@@ -99,7 +221,7 @@ kill_jmeter() {
 			echo "Error Jmeter/Java not stopped"
 			exit 1
 		fi
-	elif [[ $OS == "linux" ]]; then
+	elif [[ $OS_type == "linux" ]]; then
 		echo "Dit moet nog gemaakt worden!"
 	fi
 	echo "Done with killing Jmeter/Java"
@@ -235,6 +357,15 @@ preparejmeterscript() {
 
 	echo "Prepare workload script from base script, project [$projectname] workload [$workload]..."
 
+	# check if workload config is present	
+	if grep -q "WORKLOAD_$workload" "$sourcefilename"
+	then
+		echo "Workload [$workload] found in file [$sourcefilename]"
+	else
+		echo "Fatal: workload [$workload] not found in source file [$sourcefilename], exiting..."
+		exit 1
+	fi
+
 	cp $sourcefilename $targetfilename
 
 	# disable all workload configurations
@@ -246,7 +377,7 @@ preparejmeterscript() {
 	# check if at least one workload is enabled
 	if grep -q 'WORKLOAD_.*true' $targetfilename
 	then
-		echo "Testplan generated to file [$targetfilename]"
+		echo "Workload successfully enabled in file [$targetfilename]"
 	else
 		echo "Fatal: could not create script [$targetfilename] from [$sourcefilename]"
 		
@@ -276,6 +407,8 @@ run_jmeter() {
 	logdir=$4
 	threshold="threshold_$workload"
 	
+	test_variable "OS_type variable" $OS_type
+	
 	# verify if threshold is set for this workload, if not: use default setting
 	if [[ -z ${!threshold} ]]; then
 		threshold="threshold_default"
@@ -296,16 +429,21 @@ run_jmeter() {
 	
 
 	# Run jmeter
-	./jmeter/bin/jmeter.sh -t "$scriptfolder/${projectname}_$workload.jmx" -Jresultfile=$logdir/result.jtl -n -Dsummariser.name=summary -Dsummariser.interval=60 -Dsummariser.log=true -Dsummariser.out=true &
+	if [[ $OS_type == "windows" || $OS_type == "linux" ]]; then
+		./jmeter/bin/jmeter.sh -t "$scriptfolder/${projectname}_$workload.jmx" -Jresultfile=$logdir/result.jtl -n -Dsummariser.name=summary -Dsummariser.interval=60 -Dsummariser.log=true -Dsummariser.out=true -Djavax.net.ssl.keyStore=$jm_keystore -Djavax.net.ssl.keyStorePassword=$jm_keyStorePassword &
+#		./jmeter/bin/jmeter.sh -t "$scriptfolder/${projectname}_$workload.jmx" -Jresultfile=$logdir/result.jtl -n -Dsummariser.name=summary -Dsummariser.interval=60 -Dsummariser.log=true -Dsummariser.out=true &
+	else
+		aborttest "\$OS_type in globals is not windows or linux but is: \"$OS_type\", aborting test..."
+	fi
 	
 	# Start and wait 10 for process to show
 	sleep 10
 	
 	# Get the ProcessID for silkperformer to see if it is still running
-	if [[ $OS == "windows" ]]; then
+	if [[ $OS_type == "windows" ]]; then
 		processStart=$(ps -a | grep -i Java | awk '{print $1}' | head -1)
 		process=$(ps -a | grep -i Java | awk '{print $1}' | head -1)
-	elif [[ $OS == "linux" ]]; then
+	elif [[ $OS_type == "linux" ]]; then
 		processStart=$(ps -a | grep jmeter.sh | awk '{print $1}' | head -1)
 		process=$(ps -a | grep jmeter.sh | awk '{print $1}' | head -1)
 	fi
@@ -329,18 +467,18 @@ run_jmeter() {
 		
 		# Prep for next while loop and make sure Jmeter does not run for too long
 		if [[ $threshold -gt $tdiff ]]; then
-			if [[ $OS == "windows" ]]; then
+			if [[ $OS_type == "windows" ]]; then
 				process=$(ps -a | grep -i Java | awk '{print $1}' | head -1)
-			elif [[ $OS == "linux" ]]; then
+			elif [[ $OS_type == "linux" ]]; then
 				process=$(ps -a | grep jmeter.sh | awk '{print $1}' | head -1)
 			fi
 		else
 			echo "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
 			echo "Treshold exceeded aborting test..."
 			
-			if [[ $OS == "windows" ]]; then
+			if [[ $OS_type == "windows" ]]; then
 				taskkill /F /IM Java.exe 2>/dev/null
-			elif [[ $OS == "linux" ]]; then
+			elif [[ $OS_type == "linux" ]]; then
 				kill -9 jmeter.sh
 			fi
 			
@@ -556,16 +694,60 @@ getAppVersion() {
 
 validateDiskSpace(){
 	location=$1
-	availSpace=$(df "$location" --block-size=G | awk 'NR==2 { print $4 }' | sed 's/[^0-9]*//g')
-	if (( availSpace < freespace_$location\_threshold )); then
-	  echo "*****************************"
-	  echo "Not enough diskspace available" 
-	  echo "Required space  = $reqSpace"
-	  echo "Available space = $availSpace"
-	  echo "Aborting test"
-	  echo "*****************************"
-	  exit 1
+	reqSpace=$2
+	reqSpaceWarning=$3
+	
+	if [[ "$OS_type" == "windows" ]]; then
+		availSpace=$(df "$location"":/" --block-size=MB | awk 'NR==2 { print $4 }' | sed 's/[^0-9]*//g')
+	elif [[ "$OS_type" == "linux" ]]; then
+		availSpace=$(df "$location" --block-size=MB | awk 'NR==2 { print $4 }' | sed 's/[^0-9]*//g')
 	else
-		echo "Genoeg vrij: $availSpace"
+		echo "Unknown OS Type, please define variable OS_type in the globals to either 'windows' or 'linux'"
+		exit 1
 	fi
+	
+	if [[ $availSpace -lt $reqSpace ]]; then
+		echo "*****************************"
+		echo "Not enough diskspace available on $1" 
+		echo "Required space (in MB)  = $reqSpace"
+		echo "Available space (in MB) = $availSpace"
+		echo "Aborting test"
+		echo "*****************************"
+		exit 1
+	elif [[ $availSpace -lt $reqSpaceWarning ]]; then
+		echo "*****************************"
+		echo "Warning disk space is getting limited on $1" 
+		echo "Required space (in MB)  = $reqSpaceWarning"
+		echo "Available space (in MB) = $availSpace"
+		echo "*****************************"
+	else
+		echo "Enough space available on $location: $availSpace MB, required: $reqSpace"
+	fi
+}
+
+cleanbackupfolder(){
+	# Cleaning backup files
+	echo "Start removing backup result and logging folders"
+	
+	echo "Backup directory: $logbackupdir"
+	#echo "Project: $project"
+
+	arrResultDirs=(`find "$logbackupdir" -maxdepth 1 -type d -regex ".*\/[0-9][0-9]-[^ ]*_$project" | sort -r`)
+	echo "Keep numer of backups for this environment: $backupsToKeep"
+	echo "Current number of backups: ${#arrResultDirs[@]}"
+
+	echo "The following backup folders are deleted: "
+	# Aangegeven aantal resultaten laten staan
+	for i in "${arrResultDirs[@]:$backupsToKeep:${#arrResultDirs[@]}-$backupsToKeep}"; do echo "$i"; done
+	
+	echo "Results: "
+	# Daadwerkelijk verwijderen files en directories, tevens weergeven (-v verbose)
+	for i in "${arrResultDirs[@]:$backupsToKeep:${#arrResultDirs[@]}-$backupsToKeep}"; do rm -r -v "$i"; done
+
+	unset arrResultDirs;
+	arrResultDirs=(`find "$logbackupdir" -maxdepth 1 -type d -regex ".*\/[0-9][0-9]-[^ ]*_$project" | sort -r`)
+	echo "Remaining number of backups: ${#arrResultDirs[@]}"
+	unset arrResultDirs;
+
+	echo "Done removing backup result and logging folders"
 }

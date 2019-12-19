@@ -4,29 +4,47 @@ echo "-----------------------------------------------------------------------"
 echo "Start script $0 on `date +"%m-%d-%y"` @ `date +"%T"`"
 echo "-----------------------------------------------------------------------"
 
+. ./functions.sh
+
 buildnumber=$1
 prodload=$2
 baseline=$3
 project=$4
 runverification=$5
 
-. ./functions.sh
-loadGlobals
-
 numberofvars=5
 
-#test_variable "testingversion" $testingversion
-test_variable "buildnumber" $buildnumber
-test_variable "prodload" $prodload
-test_variable "baseline" $baseline
-test_variable "project" $project
-test_variable "verificatie" $runverification
+echo "-----------------------------------------------------------------------"
+echo "The script received $# arguments"
+echo "The script expected "$numberofvars" arguments"
 
-echo "All variables present and filled"
+if [[ "$#" != $numberofvars ]]; then
+	echo "Number of arguments does not match, aborting..."
+	exit 1
+else
+	echo "The number of arguments supplied is correct continuing..."
+	
+	test_variable "buildnumber" $buildnumber
+	test_variable "prodload" $prodload
+	test_variable "baseline" $baseline
+	test_variable "project" $project
+	test_variable "verificatie" $runverification
 
+	echo "All variables present and filled"
+fi
 echo "Done with setting and checking incomming variables"
 echo "-----------------------------------------------------------------------"
+
 echo
+
+echo "-----------------------------------------------------------------------"
+echo "Start with creating and loading of globals"
+
+createGlobals
+loadGlobals
+
+echo "Done with creating and loading of globals"
+echo "-----------------------------------------------------------------------"	
 
 echo
 echo "-----------------------------------------------------------------------"
@@ -36,16 +54,13 @@ testtag="`date +"%y-%m-%d_%H_%M_%S"`_$project"
 echo "testtag: $testtag"
 echo "Done creating testtag"
 echo "-----------------------------------------------------------------------"
-echo
 
+echo
 echo "-----------------------------------------------------------------------"
 echo "Start writing start time + project to file"
+echo "BuildlogLocation: $BuildlogLocation"
 echo start=`date +"%y-%m-%d_%H_%M_%S"` : $project $prodload >> $BuildlogLocation
 echo "Done writing start time + project to file"
-echo "-----------------------------------------------------------------------"
-
-echo "-----------------------------------------------------------------------"
-echo ""
 echo "-----------------------------------------------------------------------"
 
 
@@ -58,7 +73,6 @@ if isfile $projectfolder_root/$project/vars.incl; then echo "Found project speci
 . $projectfolder_root/$project/vars.incl
 echo "Done getting project specific variables"
 echo "-----------------------------------------------------------------------"
-echo
 
 echo
 echo "-----------------------------------------------------------------------"
@@ -116,7 +130,30 @@ else
 	echo "Printing of options is disabled"
 fi
 
-# Het doen van project specifieke checks
+if [[ "$cleanbackupfolder" == "true" ]]; then
+	
+	cleanbackupfolder
+	
+fi
+echo "-----------------------------------------------------------------------"
+
+echo
+
+echo "-----------------------------------------------------------------------"
+# Check the available disk space, abort if not enough available
+# Will check space for each value in the hashmap with the provided space threshold
+declare -A spaceHashTable=$spaceHashTableValues
+declare -A spaceHashTableWarning=$spaceHashTableValuesWarning
+for location in "${!spaceHashTable[@]}"; do 
+	validateDiskSpace "$location" "${spaceHashTable[$location]}" "${spaceHashTableWarning[$location]}" 
+done
+echo "-----------------------------------------------------------------------"
+
+echo
+
+echo "-----------------------------------------------------------------------"
+# each project folder has it's own script that allows for project specific checks that
+# need to be performd before starting the test
 if [[ "$project_specific_checks" == "true" ]]; then
 	
 	echo "Start with project specific checks"
@@ -128,9 +165,9 @@ else
 fi
 
 echo "-----------------------------------------------------------------------"
-echo
 
 echo
+
 echo "-----------------------------------------------------------------------"
 # Stoppen van tooling, voorkomt mogelijke verstoring (bijv: Silk kan niet starten als Silk al draait)
 
@@ -142,12 +179,11 @@ else
 fi
 
 echo "-----------------------------------------------------------------------"
-echo
 
 echo
+
 echo "-----------------------------------------------------------------------"
-
-# Verwijderen van oude folders (algemene)
+# Removing of old folders (general)
 if [[ "$removelogfolders" == "true" ]]; then
  
 	# Cleaning previous logs
@@ -160,9 +196,9 @@ else
 fi
 
 echo "-----------------------------------------------------------------------"
-echo
 
 echo
+
 echo "-----------------------------------------------------------------------"
 # Recreating folders & checking if they exist
 

@@ -36,6 +36,8 @@ namespace rpg.common
     /// </summary>
     public class Intermediate : Dictionary<string, string>
     {
+        public static string NOENTITY = "-";
+
         /// <summary> key-value pair separator </summary>
         public const char KEYVALUESEPARATOR = '=';
         /// <summary> list value separator character </summary>
@@ -51,6 +53,21 @@ namespace rpg.common
         private const string TAGKEY = "tag";
         /// <summary> generic key prefix </summary>
         public string keyPrefix;
+
+        private DataAccess dataAccess = null;
+
+        /// <summary>
+        /// Access method for dataAccess
+        /// </summary>
+        /// <param name="projectName"></param>
+        /// <returns></returns>
+        private DataAccess GetDataAccess(string projectName)
+        {
+            if (dataAccess == null)
+                dataAccess = new DataAccess(projectName);
+
+            return dataAccess;
+        }
 
         /// <summary>
         /// Write intermediate to file
@@ -173,7 +190,7 @@ namespace rpg.common
             // Fix transaction entries and left length of value series
             Log.WriteLine(string.Format("expanding data for [{0}]", tag));
 
-            // add key if not exist
+            // add key (transaction name) if not exist
             foreach (KeyValuePair<string, string> pair in intermediate)
             {
                 if (!this.ContainsKey(pair.Key))
@@ -217,8 +234,11 @@ namespace rpg.common
         /// </summary>
         public void Normalize()
         {
+            Log.WriteLine("normalize intermediate...");
+
             int cnt;
             int maxCnt = 0;
+
             // find max value series length
             foreach (KeyValuePair<string, string> pair in this)
             {
@@ -232,14 +252,27 @@ namespace rpg.common
             foreach (KeyValuePair<string, string> pair in this)
             {
                 string newValue = pair.Value;
-                while (NumOfElements(newValue) < maxCnt)
+
+                // if new value: fill left
+                if ((NumOfElements(newValue) == 1) && (maxCnt>1))
                 {
-                    newValue = newValue + LISTSEPARATOR;
+                    //Log.Write("left fill:[" + pair.Key + "=" + pair.Value + "]");
+                    while (NumOfElements(newValue) < maxCnt)
+                        newValue = LISTSEPARATOR + newValue;
+                    //Log.WriteLine("->[" + newValue + "]");
                 }
-                
+                // if already present: fill right
+                else
+                {
+                    //Log.Write("right fill:[" + pair.Key + "=" + pair.Value + "]");
+                    while (NumOfElements(newValue) < maxCnt)
+                        newValue = newValue + LISTSEPARATOR;
+                    //Log.WriteLine("->[" + newValue + "]");
+                }
+
                 tmpList.Add(pair.Key, newValue);
             }
-            this.CopyFrom(tmpList);
+            this.ReplaceFrom(tmpList);
         }
 
 
@@ -247,12 +280,14 @@ namespace rpg.common
         /// Copy content from dictionary
         /// </summary>
         /// <param name="workList"></param>
-        public void CopyFrom(Intermediate workList)
+        public void ReplaceFrom(Intermediate workList)
         {
             this.Clear();
             foreach (KeyValuePair<string, string> pair in workList)
                 this.Add(pair.Key, pair.Value);
         }
+
+        
 
         /// <summary>
         /// Get number of element from value list
@@ -319,7 +354,8 @@ namespace rpg.common
             foreach (KeyValuePair<string, string> pair in intermediate)
             {
                 //Log.WriteLine("adding key=value {0}={1}", pair.Key, pair.Value);
-                this.Add(pair.Key, pair.Value);
+                if (!this.ContainsKey(pair.Key))
+                    this.Add(pair.Key, pair.Value);
             }
         }
 
@@ -484,6 +520,41 @@ namespace rpg.common
                 cnt = this.GetValueArray(key).Length > cnt ? this.GetValueArray(key).Length : cnt;
             }
             return cnt;
+        }
+
+        /// <summary>
+        /// Save all content of this intermediate to database
+        /// </summary>
+        /// <param name="p_projectName"></param>
+        /// <param name="p_testName"></param>
+        /// <param name="p_category"></param>
+        /// <param name="p_entity"></param>
+        public void SaveToDatabase(string p_projectName, string p_testName, string p_category, string p_entity)
+        {
+            //DataAccess da = GetDataAccess(p_projectName);
+
+            foreach (KeyValuePair<string, string> pair in this)
+            {
+                SaveOneToDatabase(p_projectName, p_testName, p_category, p_entity, pair.Key);
+                //Log.WriteLine(string.Format("storing to database {0}|{1}|{2}|{3}|{4}...", p_projectName, p_testName, p_category, p_entity, pair.Key));
+                //da.InsertValue(p_testName.Trim(), p_category.Trim(), p_entity.Trim(), pair.Key.Trim(), pair.Value.Trim());
+            }
+        }
+
+        /// <summary>
+        /// Save just one key/value pair in this intermediate to database
+        /// </summary>
+        /// <param name="p_projectName"></param>
+        /// <param name="p_testName"></param>
+        /// <param name="p_category"></param>
+        /// <param name="p_entity"></param>
+        /// <param name="p_key"></param>
+        public void SaveOneToDatabase(string p_projectName, string p_testName, string p_category, string p_entity, string p_key)
+        {
+            DataAccess da = GetDataAccess(p_projectName);
+
+            Log.WriteLine(string.Format("storing to database {0}|{1}|{2}|{3}|{4}...", p_projectName, p_testName, p_category, p_entity, p_key));
+            da.InsertValue(p_testName.Trim(), p_category.Trim(), p_entity.Trim(), p_key.Trim(), this.GetValue(p_key).Trim());
         }
 
     }

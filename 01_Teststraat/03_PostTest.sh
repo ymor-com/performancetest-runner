@@ -10,7 +10,6 @@ taglabel=$3
 
 . functions.sh || aborttest "Could not include functions"
 loadGlobals
-. $projectfolder_root/$project/vars.incl || aborttest "Could not include project variables"
 
 test_variable "testtag" $testtag
 test_variable "prodload" $prodload
@@ -23,7 +22,7 @@ echo "-----------------------------------------------------------------------"
 echo
 
 echo "-----------------------------------------------------------------------"
-# Project specifieke nahandelingen
+# Run the project specific post test script
 if [[ "$run_posttest" == "true" ]]; then
 	
 	echo  "Start with project specific posttest tasks"
@@ -38,7 +37,7 @@ echo "-----------------------------------------------------------------------"
 echo
 
 echo "-----------------------------------------------------------------------"
-# Aanmaken van de runinfo (nodig voor report engine)
+# Creation of runinfo file (Required for ReportTool)
 if [[ "$create_run_log" == "true" ]]; then
 	
 	echo "Start with creation of runinfo"
@@ -62,9 +61,9 @@ else
 	echo "Create runinfo log is disabled"
 fi
 echo "-----------------------------------------------------------------------"
-echo
 
 echo
+
 echo "-----------------------------------------------------------------------"
 # Moving logs
 if [[ "$movelogs" == "true" ]]; then

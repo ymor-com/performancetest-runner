@@ -10,13 +10,13 @@ Pworkload=$2
 
 . functions.sh || aborttest "Could not include functions"
 loadGlobals
-. $projectfolder_root/$project/vars.incl || aborttest "Could not include project variables"
 
 test_variable "testtag" $testtag
 test_variable "Pworkload" $Pworkload
 
 echo "Done with setting and checking incomming variables"
 echo "-----------------------------------------------------------------------"
+
 echo
 
 echo "-----------------------------------------------------------------------"
@@ -37,9 +37,9 @@ fi
 echo "-----------------------------------------------------------------------"
 
 echo
-# Het doorlopen van de echte test
-echo "-----------------------------------------------------------------------"
 
+echo "-----------------------------------------------------------------------"
+# Running the actual test
 if [[ "$runmaintest" == "true" ]]; then
 	
 	echo "#########"

@@ -25,7 +25,7 @@ namespace rpg.parsevariables
 
         public override void ReadLinesFromFile(ParamInterpreter p)
         {
-            jtlLines = ReadLinesFromFile(p.Value(TRANSACTIONIFILEJTL));
+            jtlLines = ReadLinesFromFileJTL(p.Value(TRANSACTIONIFILEJTL));
             csvLines = ReadLinesFromFile(p.Value(TRANSACTIONFILECSV));
         }
 
@@ -47,7 +47,9 @@ namespace rpg.parsevariables
             Log.WriteLine("parse printabletime...");
 
             // first sample from jtl has ts= (timestamp)
-            string grabValue = Utils.ExtractValueByPatternFirst(jtlLines, TESTSTARTTIMEPATTERN); // first is test starttime
+            //string grabValue = Utils.ExtractValueByPatternFirst(jtlLines, TESTSTARTTIMEPATTERN); // first is test starttime
+            string grabValue = Utils.ExtractValueByPatternLowest(jtlLines, TESTSTARTTIMEPATTERN); // lowest is test starttime
+
             string returnValue = Utils.ParseJMeterEpoch(grabValue).ToString(DATETIMEPTFORMAT);
 
             return returnValue;
@@ -64,7 +66,8 @@ namespace rpg.parsevariables
             try
             {
                 // first sample from jtl has ts= (timestamp)
-                string grabValue = Utils.ExtractValueByPatternLast(jtlLines, TESTENDTIMEPATTERN); // last is test eind time
+                //string grabValue = Utils.ExtractValueByPatternLast(jtlLines, TESTENDTIMEPATTERN); // last is test eind time
+                string grabValue = Utils.ExtractValueByPatternHighest(jtlLines, TESTENDTIMEPATTERN); // highest is test eind time
                 DateTime lastValue = Utils.ParseJMeterEpoch(grabValue);
                 Log.WriteLine("test end-time found: " + lastValue);
 

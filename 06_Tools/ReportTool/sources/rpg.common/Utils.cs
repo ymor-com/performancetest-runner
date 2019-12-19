@@ -5,12 +5,25 @@ using System.Text.RegularExpressions;
 
 namespace rpg.common
 {
+    static public class Category
+    {
+        public static string Variable = "var";
+        public static string Transaction = "trs";
+    }
+
+    static public class Entity
+    {
+        public static string None = "-";
+        public static string Runinfo = "runinfo";
+        public static string Generic = "generic";
+        public static string Transaction = "trs";
+    }
+
     /// <summary>
     /// Utilities
     /// </summary>
     static public class Utils
     {
-
         /// <summary>
         /// Test if given string (or character) is a numeric value or not
         /// </summary>
@@ -63,6 +76,69 @@ namespace rpg.common
                     return result;
                 }
             }
+            return result;
+        }
+
+        /// <summary>
+        /// Find lowest occurence of pattern in lines
+        /// </summary>
+        /// <param name="lines"></param>
+        /// <param name="valuePattern"></param>
+        /// <returns>lowest value in the list</returns>
+        public static string ExtractValueByPatternLowest(string[] lines, string valuePattern)
+        {
+            string result;
+            Regex regex = new Regex(valuePattern);
+
+            long newDT;
+            long lowestDT = DateTimeOffset.Now.ToUnixTimeMilliseconds();
+
+            foreach (string line in lines)
+            {
+                if (regex.IsMatch(line))
+                {
+                    result = regex.Match(line).Groups[1].Value;
+                    newDT = Convert.ToInt64(result);
+                    //Log.WriteLine("newDT: " + newDT);
+                    if (lowestDT > newDT)
+                    {
+                        lowestDT = newDT;
+                    }
+                }
+            }
+
+            result = lowestDT.ToString();
+            return result;
+        }
+
+        /// <summary>
+        /// Find highest occurence of pattern in lines
+        /// </summary>
+        /// <param name="lines"></param>
+        /// <param name="valuePattern"></param>
+        /// <returns>highest value in the list</returns>
+        public static string ExtractValueByPatternHighest(string[] lines, string valuePattern)
+        {
+            string result;
+            Regex regex = new Regex(valuePattern);
+
+            long newDT;
+            long highestDT = new long();
+
+            foreach (string line in lines)
+            {
+                if (regex.IsMatch(line))
+                {
+                    result = regex.Match(line).Groups[1].Value;
+                    newDT = Convert.ToInt64(result);
+                    if (highestDT < newDT)
+                    {
+                        highestDT = newDT;
+                    }
+                }
+            }
+
+            result = highestDT.ToString();
             return result;
         }
 
@@ -188,26 +264,9 @@ namespace rpg.common
         /// <returns></returns>
         public static string NormalizeTransactionName(string suggestedName)
         {
-            //string name = suggestedName;
-            //name = name.Replace('/','|');   // dangerous for sed statement in templategenerator (for now)
-            //name = name.Replace('\\','|');  // dangerous for sed statement in templategenerator (for now)
-            //name = name.Replace(":", "-");
-            //name = name.Replace("=", "-");
-            //name = name.Replace(".", "");   // dangerous for sed statement in templategenerator (for now)
-            //name = name.Replace("<", "");
-            //name = name.Replace(">", "");
-            //name = name.Replace("\"", "");
-            //name = name.Replace("\'", "");
-            //name = name.Replace("[", "(");
-            //name = name.Replace("]", ")");
-            //name = name.Replace('{', '|'); // sed in template generator is sensitive to curly brackets (replaces initial fix in post
-            //name = name.Replace('}', '|');
-            //name = name.Trim();             // just more beautiful
-            //name = name.Replace("  "," ");  // template generator is failing on this
-
-            // trial for testpurposes, not effective yet, appears only in log for now
             string newName = "";
-            foreach (char c in suggestedName)
+
+            foreach (char c in suggestedName.Trim())
             {
                 // characters allowed: a-z A-Z 0-9 - _ rest is replaced by _
                 if (Regex.IsMatch(c.ToString(), $"[a-zA-Z0-9-]"))
@@ -215,7 +274,10 @@ namespace rpg.common
                 else
                     newName = string.Concat(newName, '_');
             }
-            Log.WriteLine(string.Format("normalize transactionname org=[{0}] new=[{1}]", suggestedName, newName));
+
+            // only log message if transaction name is changed
+            if (string.Compare(suggestedName, newName) > 0 )
+                Log.WriteLine(string.Format("transaction name normalized org=[{0}] new=[{1}]", suggestedName, newName));
 
             return newName;
         }

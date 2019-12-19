@@ -179,8 +179,8 @@
 	<tr><td class="name">Report generated</td><td id="report_generated">${rptgendatetime}</td></tr>
 <tr><td>&nbsp</td></tr>
 	<tr><td class="name">Baseline version</td><td id="baseline_version">${baseline.appversion}</td></tr>
-	<tr><td class="name">Baseline used</td><td id="baseline_used">${_baselineref}</td></tr>
-	<tr><td class="name">Baseline reason</td><td id="baseline_reason">${_baselinereason}</td></tr>
+	<tr><td class="name">Baseline used</td><td id="baseline_used">${baselineref}</td></tr>
+	<tr><td class="name">Baseline reason</td><td id="baseline_reason">${baselinereason}</td></tr>
 <tr><td>&nbsp</td></tr>
 	<tr><td class="name">Max trend items</td><td id="max_trend_items">${maxtrendcount}</td></tr>
 </table>
@@ -189,8 +189,8 @@
 
 <h3>Thresholds</h3>
 <table class="config">
-	<tr><td></td><td class="header">OK</td><td class="header">WARNING</td><td class="header">HIGH</tr>
-	$[<tr><td class="name">${threshold.pattern:#}</td><td class="green rightalign"></td><td class="yellow rightalign">${threshold.th1:#:0.0}</td><td class="red rightalign">${threshold.th2:#:0.0}</td></tr>]
+	<tr><td class="header">Transaction name pattern</td><td class="header">WARNING</td><td class="header">HIGH</tr>
+	$[<tr><td class="name">${threshold.pattern:#}</td><td class="yellow rightalign">${threshold.th1:#:0.0}</td><td class="red rightalign">${threshold.th2:#:0.0}</td></tr>]
 </table>
 
 </td><td>
@@ -198,8 +198,8 @@
 <table><tr>
 <td valign="bottom">*</td><td>
 <h3>History</h3><table class="config">
-	<tr><td></td><td class="header">Version</td><td class="header">Duration</td><td class="header">Faults (%)</td></tr>
-	$[<tr><td class="name"><a href=${projectname}_${workload:#}_${testrundatetime:#}.html>${testrundatetime:#}</a></td><td>${appversion:#::-}</td><td>${testduration:#::-}</td><td>${faultpercentage:#::-}</td></tr>]
+	<tr><td class="header">Testrun</td><td class="header">Baseline</td><td class="header">Version</td><td class="header">Duration</td><td class="header">Faults (%)</td></tr>
+	$[<tr><td class="name"><a href=${projectname}_${workload:#}_${testrundatetime:#}.html>${testrundatetime:#}</a></td><td>${baselineref:#::-}</td><td>${appversion:#::-}</td><td>${testduration:#::-}</td><td>${faultpercentage:#::-}</td></tr>]
 </table>
 </td>
 </tr></table>
@@ -208,27 +208,27 @@
 
 <h3>Legend</h3>
 <table class="config">
-	<tr><td class="name">'No data' value</td><td></td></tr>
-	<tr><td class="name">(st)</td><td>static data, not dynamically retrieved</td></tr>
-	<tr><td class="name">Evaluated</td><td>Requirements are evaluated against this value</td></tr>
-	<tr><td class="name">Baseline</td><td>Baseline's measurement (evaluated value)</td></tr>
-	<tr><td class="name">Current</td><td>This session's measurement (evaluated value)</td></tr>
-	<tr><td class="name">Delta %</td><td>
+	<tr><td class="name">Paragraph Summary</td><td>
+		Only transactions containing pattern '<2 digit number>_' are evaluated</td></tr>
+	<tr><td class="name">Metric Threshold violations</td><td>
+		Number of transactions exceeding 'red' threshold</td></tr>
+	<tr><td class="name">Metric Baseline warnings</td><td>
+		Number of 'red' transactions in column Delta%</td></tr>
+	<tr><td class="name">Metric Trendbreak 'scalability'</td><td>
+		Percentage of (max) users at which ramp-up of throughput breaks</td></tr>
+	<tr><td class="name">Metric Trendbreak 'stability'</td><td>
+		Progress of test at which stability of throughput or errorcount breaks</td></tr>
+<tr><td>&nbsp</td></tr>
+	<tr><td class="name">Paragraph Response times</td><td/></tr>
+	<tr><td class="name">Column Evaluated</td><td>Requirements are evaluated against this value</td></tr>
+	<tr><td class="name">Column Baseline</td><td>Baseline's measurement (evaluated value)</td></tr>
+	<tr><td class="name">Column Current</td><td>This session's measurement (evaluated value)</td></tr>
+	<tr><td class="name">Column Delta %</td><td>
 		Difference between current and baseline, in % compared to the baseline<br>
 		Shows if current or baseline exceeds a threshold (yellow or red)<br>
 		Shows if difference is substantial (>15%)<br>
 		Shows Red at performance degradation<br>
 		Shows Green at performance improvement</td></tr>
-	<tr><td class="name">Summary<br><td>
-		Only transactions containing pattern '<2digitnumber>_' are evaluated</td></tr>
-	<tr><td class="name">Threshold violations<br><td>
-		Num of transactions exceeding 'red' threshold</td></tr>
-	<tr><td class="name">Baseline warnings<br><td>
-		Num of transactions with 'red' baseline delta% are evaluated</td></tr>
-	<tr><td class="name">Trendbreak 'scalability'<br><td>
-		Percentage of (max) users at which ramp-up of throughput breaks</td></tr>
-	<tr><td class="name">Trendbreak 'stability'<br><td>
-		Progress of test at which stability of throughput or errorcount breaks</td></tr>
 </table>
 
 </td>
@@ -241,9 +241,8 @@
 <td><h3>Summary</h3>
 <table class="config">
 	<tr><td class="name">Transactions failed (%)</td><td id="transactions_failed">${faultpercentage}</td></tr>
-	<tr><td class="name">Threshold violations</td><td id="threshold_violations">${_thresholdviolations:4:0:0}</td></tr>
-	<tr><td class="name">Baseline warnings</td><td id="baseline_warnings">${_baselinewarnings:4:0:0}</td></tr>
-	<tr><td>&nbsp</td><td></td></tr>
+	<tr><td class="name">Threshold violations</td><td id="threshold_violations">${thresholdviolations:4:0:0}</td></tr>
+	<tr><td class="name">Baseline warnings</td><td id="baseline_warnings">${baselinewarnings:4:0:0}</td></tr>
 	<tr><td class="name">Trendbreak 'scalability' (%)</td><td id="trendbreak_scalability">${trendbreakrampuppercentage}</td></tr>
 	<tr><td class="name">Trendbreak 'stability' (%)</td><td id="trendbreak_stability">${trendbreakstabilitypercentage}</td></tr>
 	<tr><td>&nbsp</td><td></td></tr>
@@ -266,10 +265,11 @@
 <hr align="left" width="100%" size="1"/>
 <h3>Trend last ${maxtrendcount} testruns</h3>
 <table width="100%"><tr>
-	<td width="25%"><canvas id="chart_trend_stats_1"></canvas></td>
-	<td width="25%"><canvas id="chart_trend_stats_2"></canvas></td>
-	<td width="25%"><canvas id="chart_trend_stats_3"></canvas></td>
-	<td width="25%"><canvas id="chart_trend_stats_4"></canvas></td>
+	<td width="20%"><canvas id="chart_trend_stats_1"></canvas></td>
+	<td width="20%"><canvas id="chart_trend_stats_2"></canvas></td>
+	<td width="20%"><canvas id="chart_trend_stats_3"></canvas></td>
+	<td width="20%"><canvas id="chart_trend_stats_4"></canvas></td>
+	<td width="20%"><canvas id="chart_trend_stats_5"></canvas></td>
 </tr></table>
 	
 <hr align="left" width="100%" size="1"/>
@@ -281,13 +281,13 @@
 	</tr>
 	
 	<tr valign="top">
-	<th>Transaction</th><th>Success</th><th>Min</th><th>Avg</th><th>90 perc</th><th>Max</th><th>StDev</th><th>Failed</th><th>Canceled</th><th class="blank"/></th><th>${_baselineref}<br>${baseline.appversion}</th><th>${testrundatetime}<br>${appversion}</th><th>Delta %</th>
+	<th>Transaction</th><th>Success</th><th>Min</th><th>Avg</th><th>90 perc</th><th>Max</th><th>StDev</th><th>Failed</th><th>Canceled</th><th class="blank"/></th><th>${baselineref}<br>${baseline.appversion}</th><th>${testrundatetime}<br>${appversion}</th><th>Delta %</th>
 	</tr>
 	
 	||BLOK2||
 
 	<tr valign="top">
-	<th>Transaction</th><th>Success</th><th>Min</th><th>Avg</th><th>90 perc</th><th>Max</th><th>StDev</th><th>Failed</th><th>Canceled</th><th class="blank"></th><th>${_baselineref}</th><th>${testrundatetime}</th><th>Delta %</th>
+	<th>Transaction</th><th>Success</th><th>Min</th><th>Avg</th><th>90 perc</th><th>Max</th><th>StDev</th><th>Failed</th><th>Canceled</th><th class="blank"></th><th>${baselineref}</th><th>${testrundatetime}</th><th>Delta %</th>
 	</tr>
 </table>
 
@@ -297,6 +297,7 @@
 	<th>Transaction</th>$[<th class="rotate"><div><span>${testrundatetime:#}<br>${appversion:#}</span></div></th>]
 	</tr>
 	||BLOK3||
+	<th>Transaction</th>$[<th id="${testrundatetime:#}"></th>]
 </table>
 
 
@@ -311,7 +312,7 @@ new Chart(document.getElementById("chart_counters"), {
       labels: [${measuretimeseries}],
       datasets: [
         {
-          label: "Response time",
+          label: "Response time (avg)",
           data: [${Transaction#Overall_Response_Time#Trans.(busy)_ok[s]}],
 		  fill: false,
 		  lineTension: 0.1,
@@ -321,7 +322,7 @@ new Chart(document.getElementById("chart_counters"), {
 		  yAxisID: 'Y1'
         },
 		{
-          label: "Transaction rate",
+          label: "Transaction rate (count)",
           data: [${Summary_General---Transactions}],
 		  fill: false,
 		  lineTension: 0.1,
@@ -331,7 +332,7 @@ new Chart(document.getElementById("chart_counters"), {
 		  yAxisID: 'Y2'
         },
 		{
-          label: "Error rate",
+          label: "Error rate (sum)",
           data: [${Summary_General---Errors}],
 		  fill: false,
 		  lineTension: 0.1,
@@ -341,7 +342,7 @@ new Chart(document.getElementById("chart_counters"), {
 		  yAxisID: 'Y2'
         },
 		{
-          label: "Active users",
+          label: "Active users (max)",
           data: [${Summary_General---Active_users}],
 		  fill: false,
 		  lineTension: 0.1,
@@ -360,12 +361,12 @@ new Chart(document.getElementById("chart_counters"), {
 		callbacks: {
 			label: function(tooltipItem, data) {
 					var unit = "";
-					if (data.datasets[tooltipItem.datasetIndex].label == "Response time")
+					if (data.datasets[tooltipItem.datasetIndex].label == "Response time (avg)")
 						unit = " s";
-					if ((data.datasets[tooltipItem.datasetIndex].label == "Transaction rate") || (data.datasets[tooltipItem.datasetIndex].label == "Error rate"))
+					if ((data.datasets[tooltipItem.datasetIndex].label == "Transaction rate (count)") || (data.datasets[tooltipItem.datasetIndex].label == "Error rate (sum)"))
 						unit = " trs\/10s";
 					
-					if (data.datasets[tooltipItem.datasetIndex].label == "Active users")
+					if (data.datasets[tooltipItem.datasetIndex].label == "Active users (max)")
 						unit = " users";
                     return data.datasets[tooltipItem.datasetIndex].label + ": " + tooltipItem.yLabel + unit;
                 },
@@ -723,6 +724,71 @@ new Chart(document.getElementById("chart_trend_stats_4"), {
 				scaleLabel: {
 					display: false,
 					labelString: 'percentage'
+					}
+			}],
+			xAxes: [{
+				type: 'category',
+				gridLines: { display: true },
+				ticks: { display: false	}
+            }]
+        }
+    }
+});
+
+new Chart(document.getElementById("chart_trend_stats_5"), {
+    type: 'line',
+    data: {
+      labels: [$['${testrundatetime:#}',]],
+      datasets: [
+        {			
+          label: "Threshold violations",
+          data: [$[${thresholdviolations:#:0:null},]],
+		  fill: false,
+		  lineTension: 0.1,
+		  pointRadius: 2,
+		  borderWidth: 2,
+		  yAxisID: 'Y1'
+},{
+          label: "Baseline warnings",
+          data: [$[${baselinewarnings:#:0:null},]],
+		  fill: false,
+		  lineTension: 0.1,
+		  pointRadius: 2,
+		  borderWidth: 2,
+		  yAxisID: 'Y1'
+}]
+    },
+    options: {
+      legend: { 
+		display: true,
+		position: 'bottom'
+		},
+	  tooltips: {
+		callbacks: {
+			label: function(tooltipItem, data) {
+                    return data.datasets[tooltipItem.datasetIndex].label + ": " + tooltipItem.yLabel;
+                },
+			title: function(tooltipItem){
+                return 'at testrun '+this._data.labels[tooltipItem[0].index];
+				}
+        }
+	  },
+	  	  plugins: {
+		colorschemes: { scheme: 'office.Parallax6' }
+	  },
+      title: {
+        display: true,
+        text: 'Relative performance'
+      },
+      scales: {
+            yAxes: [{
+				id: 'Y1',
+				type: 'linear',
+				position: 'left',
+                ticks: { beginAtZero:true },
+				scaleLabel: {
+					display: false,
+					labelString: 'number'
 					}
 			}],
 			xAxes: [{
