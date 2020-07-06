@@ -70,9 +70,12 @@ namespace rpg.common
 
             foreach (string line in lines.Reverse())
             {
+                //Log.WriteLine("DEBUG handing line: "+line);
                 if (regex.IsMatch(line))
                 {
+                    //Log.WriteLine("DEBUG match! applying pattern: " + valuePattern + "/" + line);
                     result = regex.Match(line).Groups[1].Value;
+                    //Log.WriteLine("DEBUG match: "+result);
                     return result;
                 }
             }
@@ -174,6 +177,17 @@ namespace rpg.common
         {
             return ToAnyFloatString(value, Intermediate.DECIMALSEPARATORINTERMEDIATE);
         }
+
+        /// <summary>
+        /// Override for double
+        /// </summary>
+        /// <param name="value"></param>
+        /// <returns></returns>
+        public static string ToIntermediateFloatString(double value)
+        {
+            return ToIntermediateFloatString(value.ToString());
+        }
+
 
         /// <summary>
         /// convert any decimal string to intermediate measure float string
@@ -320,7 +334,7 @@ namespace rpg.common
         public static char GetDecimalChar(string value)
         {
             // return first non-numeric character
-            return Regex.Match(value, "[^\\d]").Value[0];
+            return Regex.Match(value, "[.,]").Value[0];
         }
     }
 }

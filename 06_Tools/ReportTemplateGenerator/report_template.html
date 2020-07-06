@@ -113,17 +113,12 @@
 		h2 {
 			margin-top: 1em;
 			margin-bottom: 0.5em;
-			125% verdana,
-			arial,
-			helvetica;
-			text-transform: uppercase;
+			125% verdana, arial, helvetica;
 		}
 
 		h3 {
 			margin-bottom: 0.5em;
-			115% verdana,
-			arial,
-			helvetica
+			115% verdana, arial, helvetica;
 		}
 
 		.Failure {
@@ -194,7 +189,7 @@
 <h3>Thresholds</h3>
 <table class="config">
 	<tr><td class="header">Transaction name pattern</td><td class="header">WARNING</td><td class="header">HIGH</tr>
-	$[<tr><td class="name">${threshold.pattern:#}</td><td class="yellow rightalign">${threshold.th1:#:0.0}</td><td class="red rightalign">${threshold.th2:#:0.0}</td></tr>]
+	$[<tr><td class="name">${threshold.pattern:#}</td><td class="yellow rightalign">${threshold.th1:#:0,0}</td><td class="red rightalign">${threshold.th2:#:0,0}</td></tr>]
 </table>
 
 </td><td>
@@ -203,7 +198,7 @@
 <td valign="bottom">*</td><td>
 <h3>History</h3><table class="config">
 	<tr><td class="header">Testrun</td><td class="header">Baseline</td><td class="header">Version</td><td class="header">Duration</td><td class="header">Faults (%)</td></tr>
-	$[<tr><td class="name"><a href=${projectname}_${workload:#}_${testrundatetime:#}.html>${testrundatetime:#}</a></td><td>${baselineref:#::-}</td><td>${appversion:#::-}</td><td>${testduration:#::-}</td><td>${faultpercentage:#::-}</td></tr>]
+	$[<tr><td class="name"><a href=${projectname}_${workload:#}_${testrundatetime:#}.html>${testrundatetime:#}</a></td><td>${baselineref:#::-}</td><td>${appversion:#::-}</td><td>${testduration:#::-}</td><td>${faultpercentage:#:0,00:-}</td></tr>]
 </table>
 </td>
 </tr></table>
@@ -222,17 +217,17 @@
 		Percentage of (max) users at which ramp-up of throughput breaks</td></tr>
 	<tr><td class="name">Metric Trendbreak 'stability'</td><td>
 		Progress of test at which stability of throughput or errorcount breaks</td></tr>
-<tr><td>&nbsp</td></tr>
-	<tr><td class="name">Paragraph Response times</td><td/></tr>
+	<tr><td class="name">Paragraph Response times</td><td>Only transactions in Transactions.csv are evaluated</td></tr>
 	<tr><td class="name">Column Evaluated</td><td>Requirements are evaluated against this value</td></tr>
 	<tr><td class="name">Column Baseline</td><td>Baseline's measurement (evaluated value)</td></tr>
 	<tr><td class="name">Column Current</td><td>This session's measurement (evaluated value)</td></tr>
 	<tr><td class="name">Column Delta %</td><td>
 		Difference between current and baseline, in % compared to the baseline<br>
-		Shows if current or baseline exceeds a threshold (yellow or red)<br>
-		Shows if difference is substantial (>15%)<br>
-		Shows Red at performance degradation<br>
-		Shows Green at performance improvement</td></tr>
+		Shows if current or baseline exceeds YELLOW or RED a threshold<br>
+		AND difference is >15%<br>
+		Shows RED if slower or GREEN if faster compared to baseline</td></tr>
+	<tr><td class="name">Paragraph Trend</td><td>Response times only colymn 'evaluated' of previous ${maxtrendcount} testruns</td></tr>
+	<tr><td class="name">Separator characters</td><td id="separatorcharacters">decimal: ',' thousand: '' (none)</td></tr>
 </table>
 
 </td>
@@ -244,22 +239,22 @@
 <tr valign="top">
 <td><h3>Summary</h3>
 <table class="config">
-	<tr><td class="name">Transactions failed (%)</td><td id="transactions_failed">${faultpercentage}</td></tr>
+	<tr><td class="name">Transactions failed (%)</td><td id="transactions_failed">${faultpercentage:0:0,00}</td></tr>
 	<tr><td class="name">Threshold violations</td><td id="threshold_violations">${thresholdviolations:4:0:0}</td></tr>
 	<tr><td class="name">Baseline warnings</td><td id="baseline_warnings">${baselinewarnings:4:0:0}</td></tr>
-	<tr><td class="name">Trendbreak 'scalability' (%)</td><td id="trendbreak_scalability">${trendbreakrampuppercentage}</td></tr>
-	<tr><td class="name">Trendbreak 'stability' (%)</td><td id="trendbreak_stability">${trendbreakstabilitypercentage}</td></tr>
+	<tr><td class="name">Trendbreak 'scalability' (%)</td><td id="trendbreak_scalability">${trendbreakrampuppercentage:0:0}</td></tr>
+	<tr><td class="name">Trendbreak 'stability' (%)</td><td id="trendbreak_stability">${trendbreakstabilitypercentage:0:0}</td></tr>
 	<tr><td>&nbsp</td><td></td></tr>
 	<tr><td class="name">Duration</td><td id="duration">${testduration}</td></tr>
 	<tr><td class="name">Virtual users</td><td id="virtual_users">${mergedusers}</td></tr>	
-	<tr><td class="name">Success</td><td id="success">${AGGREGATED:0:0:0}</td></tr>	
-	<tr><td class="name">Failed</td><td id="failed">${AGGREGATED:5:0:0}</td></tr>	
-	<tr><td class="name">Canceled</td><td id="canceled">${AGGREGATED:6:0:0}</td></tr>	
-	<tr><td class="name">Min of minima</td><td id="min">${AGGREGATED:1:0.000}</td></tr>	
-	<tr><td class="name">Avg of averages</td><td id="avg">${AGGREGATED:2:0.000}</td></tr>	
-	<tr><td class="name">Avg of 90 percentiles</td><td id="avg_90_percentile">${AGGREGATED:4:0.000}</td></tr>	
-	<tr><td class="name">Max of maxima</td><td id="max">${AGGREGATED:3:0.000}</td></tr>	
-	<tr><td class="name">Avg of StdDev</td><td id="avg_stddev">${AGGREGATED:9:0.000}</td></tr>	
+	<tr><td class="name">Transactions executed</td><td id="executed">${transactionstotal}</td></tr>	
+	<tr><td class="name">Transactions success</td><td id="success">${transactionssuccess}</td></tr>	
+	<tr><td class="name">Transactions failed</td><td id="failed">${transactionsfailed}</td></tr>	
+	<tr><td class="name">Min of minima (s)</td><td id="min">${AGGREGATED:1:0,000}</td></tr>	
+	<tr><td class="name">Avg of averages (s)</td><td id="avg">${AGGREGATED:2:0,000}</td></tr>	
+	<tr><td class="name">Avg of 90 percentiles (s)</td><td id="avg_90_percentile">${AGGREGATED:4:0,000}</td></tr>	
+	<tr><td class="name">Max of maxima (s)</td><td id="max">${AGGREGATED:3:0,000}</td></tr>	
+	<tr><td class="name">Avg of StdDev (s)</td><td id="avg_stddev">${AGGREGATED:9:0,000}</td></tr>	
 </table>
 </td>
 	<td style="min-width: 600px; min-height: 400px"><canvas id="chart_counters"></canvas></td>
@@ -278,31 +273,31 @@
 	
 <hr align="left" width="100%" size="1"/>
 
-<h2>Response times (ms)</h2>
-<table cellspacing="2" cellpadding="5" border="0" class="details">
+<h3>Response times (s)</h3>
+<table cellspacing="2" cellpadding="5" border="0" class="details" id="responsetimestable_begin">
 	<tr valign="top">
-	<th class="blank"/><th class="blank"/><th class="blank"/><th class="blank"/><th class="blank">Evaluated</th><th class="blank"/><th class="blank"/><th class="blank"/><th class="blank"/><th class="blank"/><th class="blank">Baseline</th><th class="blank">Current</th><th class="blank"/>
+	<th class="blank"/><th class="blank"/><th class="blank"/><th class="blank"/><th class="blank">Evaluated</th><th class="blank"/><th class="blank"/><th class="blank"/><th class="blank"/><th class="blank">Baseline</th><th class="blank">Current</th><th class="blank"/>
 	</tr>
 	
 	<tr valign="top">
-	<th>Transaction</th><th>Success</th><th>Min</th><th>Avg</th><th>90 perc</th><th>Max</th><th>StDev</th><th>Failed</th><th>Canceled</th><th class="blank"/></th><th>${baselineref}<br>${baseline.appversion}</th><th>${testrundatetime}<br>${appversion}</th><th>Delta %</th>
+	<th>Transaction</th><th>Success</th><th>Min</th><th>Avg</th><th>90 perc</th><th>Max</th><th>StDev</th><th>Failed</th><th class="blank"/><th>${baselineref}<br>${baseline.appversion}</th><th>${testrundatetime}<br>${appversion}</th><th>Delta %</th>
 	</tr>
 	
 	||BLOK2||
 
 	<tr valign="top">
-	<th>Transaction</th><th>Success</th><th>Min</th><th>Avg</th><th>90 perc</th><th>Max</th><th>StDev</th><th>Failed</th><th>Canceled</th><th class="blank"></th><th>${baselineref}</th><th>${testrundatetime}</th><th>Delta %</th>
+	<th>Transaction</th><th>Success</th><th>Min</th><th>Avg</th><th>90 perc</th><th>Max</th><th>StDev</th><th>Failed</th><th class="blank"><th>${baselineref}</th><th>${testrundatetime}</th><th>Delta %</th>
 	</tr>
-</table>
+</table id="responsetimestable_end">
 
-<h2>Trend (ms)</h2>
-<table cellspacing="2" cellpadding="5" border="0" class="details">
+<h3>Trend (s)</h3>
+<table cellspacing="2" cellpadding="5" border="0" class="details" id="trendtable_begin">
 	<tr>
 	<th>Transaction</th>$[<th class="rotate"><div><span>${testrundatetime:#}<br>${appversion:#}</span></div></th>]
 	</tr>
 	||BLOK3||
 	<th>Transaction</th>$[<th id="${testrundatetime:#}"></th>]
-</table>
+</table id="trendtable_end">
 
 
 <hr align="left" width="100%" size="1">
@@ -483,7 +478,7 @@ new Chart(document.getElementById("chart_trend_stats_1"), {
 		  yAxisID: 'Y1'
 },{			
           label: "Faults (%)",
-          data: [$[${faultpercentage:#::null},]],
+          data: [$[${faultpercentage:#:0.00:null},]],
 		  fill: false,
 		  lineTension: 0.1,
 		  pointRadius: 2,
@@ -550,7 +545,7 @@ new Chart(document.getElementById("chart_trend_stats_2"), {
       datasets: [
         {			
           label: "90 Percentiles (s)",
-          data: [$[${avgof90percentiles:#::null},]],
+          data: [$[${avgof90percentiles:#:0.000:null},]],
 		  fill: false,
 		  lineTension: 0.1,
 		  pointRadius: 2,
@@ -558,7 +553,7 @@ new Chart(document.getElementById("chart_trend_stats_2"), {
 		  yAxisID: 'Y1'
 },{
           label: "Averages (s)",
-          data: [$[${avgofaverages:#::null},]],
+          data: [$[${avgofaverages:#:0.000:null},]],
 		  fill: false,
 		  lineTension: 0.1,
 		  pointRadius: 2,
@@ -614,7 +609,7 @@ new Chart(document.getElementById("chart_trend_stats_3"), {
       labels: [$['${testrundatetime:#}',]],
       datasets: [
         {			
-          label: "Success",
+          label: "Executed",
           data: [$[${transactionstotal:#:0:null},]],
 		  fill: false,
 		  lineTension: 0.1,
@@ -782,7 +777,7 @@ new Chart(document.getElementById("chart_trend_stats_5"), {
 	  },
       title: {
         display: true,
-        text: 'Relative performance'
+        text: 'Threshold violations'
       },
       scales: {
             yAxes: [{
