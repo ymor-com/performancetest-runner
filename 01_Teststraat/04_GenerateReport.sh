@@ -8,6 +8,8 @@ testtag=$1
 workload=$2
 baseline=$3
 
+# test comment mwn
+
 # Can be enabled to do test
 # project="<projectname>"
 
