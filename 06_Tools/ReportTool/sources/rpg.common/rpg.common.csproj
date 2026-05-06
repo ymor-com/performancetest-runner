@@ -22,6 +22,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="TrendAnalyzer.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="2.2.0" />
   </ItemGroup>
 
